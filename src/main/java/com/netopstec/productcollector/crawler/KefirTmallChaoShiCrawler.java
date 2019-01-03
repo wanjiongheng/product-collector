@@ -6,12 +6,16 @@ import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.netopstec.productcollector.domain.TmallKefir;
+import com.netopstec.productcollector.repository.TmallKefirRepository;
 import com.netopstec.productcollector.service.TmallLoginService;
+import com.netopstec.productcollector.util.MailUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -31,6 +35,8 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
 
     @Autowired
     private TmallLoginService tmallLoginService;
+    @Autowired
+    private TmallKefirRepository tmallKefirRepository;
 
     @Override
     public String[] startUrls() {
@@ -84,9 +90,13 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
                     JSONObject promotion = promotionList.getJSONObject(0);
                     String price = promotion.getString("price");
                     String type = promotion.getString("type");
-                    Long startTime = promotion.getLong("startTime");
-                    Long endTime = promotion.getLong("endTime");
-                    System.out.println(price + type);
+                    TmallKefir tmallKefir = new TmallKefir();
+                    tmallKefir.setPrice(new BigDecimal(price));
+                    tmallKefir.setType(type);
+                    tmallKefir.setCreateTime(new Date());
+                    tmallKefir.setModifyTime(new Date());
+                    tmallKefir.setFlag(0);
+                    tmallKefirRepository.save(tmallKefir);
                 }
             }
         }

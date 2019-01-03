@@ -6,7 +6,10 @@ import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.netopstec.productcollector.service.TmallLoginService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.*;
@@ -21,10 +24,19 @@ import java.util.*;
 @Crawler(name = "Kefir-Tmall-ChaoShi-Crawler", delay = 2, useUnrepeated = true, useCookie = true)
 public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
 
+    @Value("${tmall.username}")
+    private String username;
+    @Value("${tmall.password}")
+    private String password;
+
+    @Autowired
+    private TmallLoginService tmallLoginService;
+
     @Override
     public String[] startUrls() {
         return new String[0];
     }
+
 
     @Override
     public List<Request> startRequests() {
@@ -32,6 +44,7 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
         Request request = Request.build("https://mdskip.taobao.com/core/initItemDetail.htm?itemId=543854752443", KefirTmallChaoShiCrawler::start);
         Map<String, String> map = new HashMap<>();
         map.put("Referer", "https://chaoshi.detail.tmall.com/item.htm");
+        map.put("Cookie", getCookie());
         request.setHeader(map);
         requests.add(request);
         return requests;
@@ -89,9 +102,14 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
         Request request = Request.build("https://mdskip.taobao.com/core/initItemDetail.htm?itemId=543854752443", "start");
         Map<String, String> header = new HashMap<>();
         header.put("Referer", "https://chaoshi.detail.tmall.com/item.htm");
+        header.put("Cookie", getCookie());
         request.setHeader(header);
         request.setCrawlerName("Kefir-Tmall-ChaoShi-Crawler");
         push(request);
+    }
+
+    private String getCookie() {
+        return tmallLoginService.tmallLogin(username, password);
     }
 
 }

@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 public class TmallLoginService {
 
     public String tmallLogin(String username, String pwd) {
+        log.info(username + "登陆天猫中。。。");
         if (StringUtils.isEmpty(username) || StringUtils.isEmpty(pwd)) {
             return "";
         }
@@ -124,6 +125,9 @@ public class TmallLoginService {
             log.error("用户[{}]登录天猫失败: ", username, e);
             return "";
         }
-        return context.getCookieStore().getCookies().stream().map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(";"));
+
+        String collect = context.getCookieStore().getCookies().stream().map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(";"));
+        log.info("登录成功， cookie：" + collect);
+        return collect;
     }
 }

@@ -12,7 +12,7 @@
         </root>
     </springProfile>
     <springProfile name="prop">
-        <property name="logback.logDir" value="/app/logs"/>
+        <property name="logback.logDir" value="/app/product-collector/logs"/>
         <property name="logback.appName" value="product-collector"/>
         <contextName>${logback.appName}</contextName>
 

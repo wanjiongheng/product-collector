@@ -2,7 +2,6 @@ package com.netopstec.productcollector.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;

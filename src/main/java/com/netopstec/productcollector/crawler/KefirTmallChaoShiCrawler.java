@@ -6,10 +6,11 @@ import cn.wanghaomiao.seimi.struct.Request;
 import cn.wanghaomiao.seimi.struct.Response;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.netopstec.productcollector.domain.ProxyIp;
 import com.netopstec.productcollector.domain.TmallKefir;
 import com.netopstec.productcollector.repository.TmallKefirRepository;
+import com.netopstec.productcollector.service.ProxyIpService;
 import com.netopstec.productcollector.service.TmallLoginService;
-import com.netopstec.productcollector.util.MailUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,7 @@ import java.util.*;
  * @date 2018/12/29 16:26
  */
 @Slf4j
-@Crawler(name = "Kefir-Tmall-ChaoShi-Crawler", delay = 2, useUnrepeated = true, useCookie = true)
+@Crawler(name = "Kefir-Tmall-ChaoShi-Crawler", delay = 2, useUnrepeated = false, useCookie = true)
 public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
 
     @Value("${tmall.username}")
@@ -34,15 +35,27 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
     private String password;
 
     @Autowired
+    private ProxyIpService proxyIpService;
+    @Autowired
     private TmallLoginService tmallLoginService;
     @Autowired
     private TmallKefirRepository tmallKefirRepository;
+
+    @Override
+    public void handleErrorRequest(Request request) {
+        push(request);
+    }
 
     @Override
     public String[] startUrls() {
         return new String[0];
     }
 
+    @Override
+    public String proxy() {
+        ProxyIp proxyIp = proxyIpService.getOne();
+        return proxyIp.getType().toLowerCase() + "://" + proxyIp.getIp() + ":" + proxyIp.getPort();
+    }
 
     @Override
     public List<Request> startRequests() {
@@ -60,21 +73,22 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
     public void start(Response response) {
         String url = response.getUrl();
         String content = response.getContent();
-        log.info("线程[{}]开始解析url[{}]的response.", Thread.currentThread().getName(), url);
+        log.info("天猫线程[{}]开始解析url[{}]的response.", Thread.currentThread().getName(), url);
         if (content == null || "".equals(content)) {
-            log.info("线程[{}]停止解析url[{}]的response. 原因content内容为空", Thread.currentThread().getName(), url);
+            log.info("天猫线程[{}]停止解析url[{}]的response. 原因content内容为空", Thread.currentThread().getName(), url);
             return;
         }
         JSONObject jsonObject = JSONObject.parseObject(content);
         String isSuccess = jsonObject.getString("isSuccess");
         if (!"true".equals(isSuccess)) {
-            log.info("线程[{}]开始解析url[{}]的response. 返回的json内容isSuccess != true", Thread.currentThread().getName(), url);
+            log.info("天猫线程[{}]开始解析url[{}]的response. 返回的json内容isSuccess != true", Thread.currentThread().getName(), url);
+            log.info(jsonObject.toString());
             return;
         }
         JSONObject defaultModel = jsonObject.getJSONObject("defaultModel");
         JSONObject itemPriceResultDO = defaultModel.getJSONObject("itemPriceResultDO");
         if (itemPriceResultDO == null) {
-            log.info("线程[{}]停止解析url[{}]的response. 原因天猫返回的itemPriceResultDO为空", Thread.currentThread().getName(), url);
+            log.info("天猫线程[{}]停止解析url[{}]的response. 原因天猫返回的itemPriceResultDO为空", Thread.currentThread().getName(), url);
             return;
         }
         JSONObject priceInfo = itemPriceResultDO.getJSONObject("priceInfo");
@@ -100,7 +114,7 @@ public class KefirTmallChaoShiCrawler extends BaseSeimiCrawler {
                 }
             }
         }
-        log.info("线程[{}]结束解析url[{}]的response.", Thread.currentThread().getName(), url);
+        log.info("天猫线程[{}]结束解析url[{}]的response.", Thread.currentThread().getName(), url);
     }
 
     /**

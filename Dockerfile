@@ -10,6 +10,8 @@ RUN mkdir /app
 
 RUN mkdir /app/logs
 
-ADD target/product-collector-0.0.1-SNAPSHOT.jar /app/app.jar
+ADD target/product-collector-0.0.1-SNAPSHOT.jar /app/product-collector-0.0.1-SNAPSHOT.jar
 
-ENTRYPOINT java  -Dspring.profiles.active=prod -jar /app/app.jar
+RUN bash -c 'touch /app/product-collector-0.0.1-SNAPSHOT.jar'
+
+# ENTRYPOINT java -jar /app/product-collector-0.0.1-SNAPSHOT.jar

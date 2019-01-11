@@ -38,11 +38,12 @@ public final class HttpUtil {
      */
     public static String doGet(String url, String queryString) {
         HttpGet get = new HttpGet(url + (queryString == null ? "" : queryString));
+        get.setHeader("Content-Type", "text/html; charset=utf-8");
         try {
             HttpResponse response = CLIENT.execute(get);
             if (response != null
                     && response.getStatusLine().getStatusCode() == 200) {
-                return EntityUtils.toString(response.getEntity());
+                return EntityUtils.toString(response.getEntity(), "GBK");
             }
         } catch (Exception e) {
             log.error("error in HttpUtil --> doGet: ", e);
